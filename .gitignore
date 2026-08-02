@@ -1,0 +1,16 @@
+# Бинарные файлы
+monitor_new
+*.exe
+
+# Переменные окружения
+.env
+
+# Логи
+*.log
+
+# Покрытие тестов
+coverage.out
+
+# IDE
+.vscode/
+.idea/
