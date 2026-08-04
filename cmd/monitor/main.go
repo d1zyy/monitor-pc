@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log"
 	"monitor-pc/internal/config"
 	"monitor-pc/internal/handler"
@@ -9,13 +11,15 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	collector, err := metrics.NewCachedCollector(ctx)
@@ -35,25 +39,38 @@ func main() {
 	router.GET("/metrics", metricsHandler.GetMetrics)
 
 	server := &http.Server{
-		Addr:    cfg.Addr,
-		Handler: router,
+		Addr:              cfg.Addr,
+		Handler:           router,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       60 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
+
+	serverErrors := make(chan error, 1)
 
 	go func() {
 		log.Println("Server is running on http://" + cfg.Addr)
-		log.Println("New Version 2.0!!!!")
 
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Could not listen on :"+cfg.Addr+": %v\n", err)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			serverErrors <- fmt.Errorf("could not listen on %s: %w", cfg.Addr, err)
 		}
 	}()
 
-	<-ctx.Done()
+	select {
+	case <-ctx.Done():
+		log.Println("Received shutdown signal")
+	case err := <-serverErrors:
+		log.Printf("Server error: %v", err)
+	}
 
 	log.Println("Shutting down server...")
 
-	if err := server.Shutdown(context.Background()); err != nil {
-		log.Fatalf("Server forced to shutdown: %v", err)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Printf("Server shutdown error: %v", err)
 	}
 
 	collector.Wait()
