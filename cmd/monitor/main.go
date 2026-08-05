@@ -70,7 +70,11 @@ func main() {
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		log.Printf("Server shutdown error: %v", err)
+		log.Printf("Graceful shutdown error: %v", err)
+
+		if closeErr := server.Close(); closeErr != nil {
+			log.Printf("Server close error: %v", closeErr)
+		}
 	}
 
 	collector.Wait()
