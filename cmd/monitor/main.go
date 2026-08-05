@@ -29,6 +29,7 @@ func main() {
 	}
 
 	metricsHandler := handler.NewMetricsHandler(collector)
+	healthHandler := handler.NewHealthHandler()
 
 	cfg, err := config.Load()
 	if err != nil {
@@ -37,6 +38,7 @@ func main() {
 
 	router := gin.Default()
 	router.GET("/metrics", metricsHandler.GetMetrics)
+	router.GET("/health", healthHandler.GetHealth)
 
 	server := &http.Server{
 		Addr:              cfg.Addr,
