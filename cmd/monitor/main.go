@@ -36,9 +36,11 @@ func main() {
 		log.Fatal("Failed to load configuration: " + err.Error())
 	}
 
+	// Set Gin
 	router := gin.Default()
 	router.GET("/metrics", metricsHandler.GetMetrics)
 	router.GET("/health", healthHandler.GetHealth)
+	router.GET("/version", handler.GetVersion)
 
 	server := &http.Server{
 		Addr:              cfg.Addr,
@@ -64,6 +66,7 @@ func main() {
 		log.Println("Received shutdown signal")
 	case err := <-serverErrors:
 		log.Printf("Server error: %v", err)
+		stop()
 	}
 
 	log.Println("Shutting down server...")
