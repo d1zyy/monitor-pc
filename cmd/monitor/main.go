@@ -36,6 +36,7 @@ func main() {
 		log.Fatal("Failed to load configuration: " + err.Error())
 	}
 
+	// Set Gin
 	router := gin.Default()
 	router.GET("/metrics", metricsHandler.GetMetrics)
 	router.GET("/health", healthHandler.GetHealth)
