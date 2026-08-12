@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"monitor-pc/internal/buildinfo"
 	"net/http"
+
+	"github.com/d1zyy/monitor-pc/internal/buildinfo"
 
 	"github.com/gin-gonic/gin"
 )

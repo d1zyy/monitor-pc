@@ -5,14 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"monitor-pc/internal/config"
-	"monitor-pc/internal/handler"
-	"monitor-pc/internal/metrics"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/d1zyy/monitor-pc/internal/config"
+	"github.com/d1zyy/monitor-pc/internal/handler"
+	"github.com/d1zyy/monitor-pc/internal/metrics"
 
 	"github.com/gin-gonic/gin"
 )

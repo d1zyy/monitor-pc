@@ -1,4 +1,4 @@
-module monitor-pc
+module github.com/d1zyy/monitor-pc
 
 go 1.25.1
 

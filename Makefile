@@ -11,7 +11,7 @@ info:
 
 build: test
 	go build \
-		-ldflags="-X monitor-pc/internal/buildinfo.version=$(VERSION) -X monitor-pc/internal/buildinfo.commit=$(COMMIT) -X monitor-pc/internal/buildinfo.buildTime=$(BUILD_TIME)" \
+		-ldflags="-X github.com/d1zyy/monitor-pc/internal/buildinfo.version=$(VERSION) -X github.com/d1zyy/monitor-pc/internal/buildinfo.commit=$(COMMIT) -X github.com/d1zyy/monitor-pc/internal/buildinfo.buildTime=$(BUILD_TIME)" \
 		-o monitor \
 		./cmd/monitor
 
