@@ -26,5 +26,8 @@ jobs:
       - name: Run Vet   
         run: go vet ./...
 
+      - name: Run race detector
+        run: go test -race ./
+
       - name: Build 
         run: make build
