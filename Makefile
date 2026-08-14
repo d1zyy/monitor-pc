@@ -1,25 +1,29 @@
 VERSION := $(shell git describe --tags --always)
 COMMIT := $(shell git rev-parse --short HEAD)
 BUILD_TIME := $(shell date -Iseconds)
+OUTPUT ?= monitor
 
-.PHONY: build test info run clean
+.PHONY: build check info run clean
 
 info:
 	@echo "Version: $(VERSION)"
 	@echo "Commit: $(COMMIT)"
 	@echo "Build Time: $(BUILD_TIME)"
 
-build: test
+build: 
 	go build \
 		-ldflags="-X github.com/d1zyy/monitor-pc/internal/buildinfo.version=$(VERSION) -X github.com/d1zyy/monitor-pc/internal/buildinfo.commit=$(COMMIT) -X github.com/d1zyy/monitor-pc/internal/buildinfo.buildTime=$(BUILD_TIME)" \
-		-o monitor \
+		-o $(OUTPUT) \
 		./cmd/monitor
 
-test:
-	go test -v ./...
+check:
+	go vet ./...
+	go fmt ./...
+	go test ./...
+	go test -race ./...
 
 run: build
-	./monitor
+	./$(OUTPUT)
 
 clean:
-	rm -f monitor
+	rm -f $(OUTPUT)
