@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/d1zyy/monitor-pc/internal/pprofserver"
+
 	"github.com/d1zyy/monitor-pc/internal/config"
 	"github.com/d1zyy/monitor-pc/internal/handler"
 	"github.com/d1zyy/monitor-pc/internal/metrics"
@@ -53,6 +55,16 @@ func main() {
 	}
 
 	serverErrors := make(chan error, 1)
+
+	go func() {
+		if cfg.PprofEnabled {
+			if err := pprofserver.StartPprofServer(cfg.PprofAddr); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				log.Printf("pprof server error: %v", err)
+			}
+
+			log.Printf("pprof server is running on http://%s\n", cfg.PprofAddr)
+		}
+	}()
 
 	go func() {
 		log.Println("Server is running on http://" + cfg.Addr)
