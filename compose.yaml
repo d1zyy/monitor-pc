@@ -1,13 +1,17 @@
 services:
   monitor:
-    image: monitor-pc:v0.1.4
+    image: monitor-pc:v0.1.5
     container_name: monitor-pc
 
     environment:
-      PORT: ${ADD_PORT:-8080}
-    
+      PORT: ${APP_PORT:-8080}
+      PPROF_ENABLED: ${PPROF_ENABLED:-false}
+      PPROF_HOST: ${PPROF_HOST:-0.0.0.0}
+      PPROF_PORT: ${PPROF_PORT:-6060}
+
     ports:
       - "${HOST_PORT:-8080}:${APP_PORT:-8080}"
+      - "127.0.0.1:${PPROF_PORT:-6060}:${PPROF_PORT:-6060}"
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT:-8080}/health"]
