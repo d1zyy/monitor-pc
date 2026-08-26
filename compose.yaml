@@ -1,0 +1,32 @@
+services:
+  monitor:
+    image: monitor-pc:v0.1.4
+    container_name: monitor-pc
+
+    environment:
+      PORT: ${ADD_PORT:-8080}
+    
+    ports:
+      - "${HOST_PORT:-8080}:${APP_PORT:-8080}"
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT:-8080}/health"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+
+    restart: unless-stopped
+
+    mem_limit: 256m
+    cpus: 0.5
+
+  client:
+    depends_on:
+       monitor:
+        condition: service_healthy
+
+    image: curlimages/curl
+
+    command: curl http://monitor:${ADD_PORT:-8080}/health
+
+
