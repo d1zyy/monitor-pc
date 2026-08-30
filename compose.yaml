@@ -1,6 +1,6 @@
 services:
   monitor:
-    image: monitor-pc:v0.1.5
+    image: monitor-pc:v0.1.6
     container_name: monitor-pc
 
     environment:
