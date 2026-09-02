@@ -9,6 +9,8 @@ type Config struct {
 	Port string
 	Addr string
 
+	DatabaseURL string
+
 	PprofEnabled bool
 	PprofPort    string
 	PprofHost    string
@@ -26,6 +28,8 @@ func Load() (Config, error) {
 	if port == "" {
 		port = "8080"
 	}
+
+	databaseURL := os.Getenv("DATABASE_URL")
 
 	pprofEnabled := os.Getenv("PPROF_ENABLED")
 	pprofPort := os.Getenv("PPROF_PORT")
@@ -45,6 +49,8 @@ func Load() (Config, error) {
 		Host: host,
 		Port: port,
 		Addr: host + ":" + port,
+
+		DatabaseURL: databaseURL,
 
 		PprofEnabled: isProfEnabled,
 		PprofPort:    pprofPort,
