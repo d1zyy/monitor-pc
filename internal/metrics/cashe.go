@@ -12,10 +12,11 @@ type CachedCollector struct {
 	last      *SystemMetrics
 	collector Collector
 	wg        sync.WaitGroup
+	saver     MetricsSaver
 	//mock      MockCollector
 }
 
-func NewCachedCollector(ctx context.Context) (*CachedCollector, error) {
+func NewCachedCollector(ctx context.Context, saver MetricsSaver) (*CachedCollector, error) {
 	collector, err := NewCollector()
 	if err != nil {
 		return nil, err
@@ -23,6 +24,7 @@ func NewCachedCollector(ctx context.Context) (*CachedCollector, error) {
 
 	c := &CachedCollector{
 		collector: collector,
+		saver:     saver,
 	}
 
 	c.wg.Add(1)
@@ -68,6 +70,12 @@ func (c *CachedCollector) refreshLoop(ctx context.Context) {
 				continue
 			}
 			c.setLast(metrics)
+
+			if c.saver != nil {
+				if err := c.saver.Save(metrics, ctx); err != nil {
+					log.Println("Error saving metrics:", err)
+				}
+			}
 
 		case <-ctx.Done():
 			log.Println("Stopping metrics refresh loop")

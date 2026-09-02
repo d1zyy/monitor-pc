@@ -14,8 +14,10 @@ import (
 	"github.com/d1zyy/monitor-pc/internal/pprofserver"
 
 	"github.com/d1zyy/monitor-pc/internal/config"
+	"github.com/d1zyy/monitor-pc/internal/database"
 	"github.com/d1zyy/monitor-pc/internal/handler"
 	"github.com/d1zyy/monitor-pc/internal/metrics"
+	"github.com/d1zyy/monitor-pc/internal/repository"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,19 +27,25 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	collector, err := metrics.NewCachedCollector(ctx)
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatal("Failed to load configuration: " + err.Error())
+	}
 
+	dbPool, err := database.NewPostgresPool(ctx, cfg.DatabaseURL)
+	if err != nil {
+		log.Fatal("Failed to create database pool: " + err.Error())
+	}
+	defer dbPool.Close()
+
+	dbRepository := repository.NewMetricsRepository(dbPool) // Initialize with the actual database pool
+	collector, err := metrics.NewCachedCollector(ctx, dbRepository)
 	if err != nil {
 		log.Fatal("Failed to create cached collector: " + err.Error())
 	}
 
 	metricsHandler := handler.NewMetricsHandler(collector)
 	healthHandler := handler.NewHealthHandler()
-
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatal("Failed to load configuration: " + err.Error())
-	}
 
 	// Set Gin
 	router := gin.Default()
