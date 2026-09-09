@@ -1,0 +1,9 @@
+CREATE TABLE metrics_history (
+    id BIGSERIAL PRIMARY KEY,
+    cpu_percent DOUBLE PRECISION NOT NULL,
+    ram_used DOUBLE PRECISION NOT NULL,
+    ram_total DOUBLE PRECISION NOT NULL,
+    disk_used DOUBLE PRECISION NOT NULL,
+    disk_total DOUBLE PRECISION NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

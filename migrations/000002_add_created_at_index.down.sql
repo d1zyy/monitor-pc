@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS idx_metrics_history_created_at;
