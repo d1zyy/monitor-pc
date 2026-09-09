@@ -38,11 +38,13 @@ func main() {
 	}
 	defer dbPool.Close()
 
-	dbRepository := repository.NewMetricsRepository(dbPool) // Initialize with the actual database pool
+	dbRepository := repository.NewMetricsRepository(dbPool)
 	collector, err := metrics.NewCachedCollector(ctx, dbRepository)
 	if err != nil {
 		log.Fatal("Failed to create cached collector: " + err.Error())
 	}
+
+	historyHandler := handler.NewMetricsHistoryHandler(dbRepository)
 
 	metricsHandler := handler.NewMetricsHandler(collector)
 	healthHandler := handler.NewHealthHandler()
@@ -52,6 +54,7 @@ func main() {
 	router.GET("/metrics", metricsHandler.GetMetrics)
 	router.GET("/health", healthHandler.GetHealth)
 	router.GET("/version", handler.GetVersion)
+	router.GET("/metrics/history", historyHandler.GetLatest)
 
 	server := &http.Server{
 		Addr:              cfg.Addr,

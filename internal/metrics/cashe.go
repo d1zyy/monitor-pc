@@ -72,9 +72,12 @@ func (c *CachedCollector) refreshLoop(ctx context.Context) {
 			c.setLast(metrics)
 
 			if c.saver != nil {
-				if err := c.saver.Save(metrics, ctx); err != nil {
+				saveCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+
+				if err := c.saver.Save(saveCtx, metrics); err != nil {
 					log.Println("Error saving metrics:", err)
 				}
+				cancel()
 			}
 
 		case <-ctx.Done():

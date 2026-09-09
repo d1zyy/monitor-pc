@@ -1,0 +1,1 @@
+CREATE INDEX idx_metrics_history_created_at ON metrics_history (created_at);
