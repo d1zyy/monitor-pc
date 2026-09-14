@@ -8,7 +8,7 @@ networks:
 
 services:
   monitor:
-    image: monitor-pc:v0.1.14
+    image: monitor-pc:v0.1.16
     container_name: monitor-pc
 
     depends_on:

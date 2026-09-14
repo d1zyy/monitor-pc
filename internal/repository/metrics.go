@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/d1zyy/monitor-pc/internal/metrics"
 
@@ -54,4 +55,38 @@ func (mr *MetricsRepository) GetLatest(ctx context.Context, limit int) ([]*metri
 	}
 
 	return history, nil
+}
+
+func (mr *MetricsRepository) SaveAndCleanup(ctx context.Context, m *metrics.SystemMetrics) error {
+	tx, err := mr.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin tx: %w", err)
+	}
+
+	defer tx.Rollback(ctx)
+
+	queryInsert := `
+		INSERT INTO metrics_history (cpu_percent, ram_used, ram_total, disk_used, disk_total) 
+		VALUES ($1, $2, $3, $4, $5)
+	`
+
+	queryDelete := `
+		DELETE FROM metrics_history WHERE created_at < NOW() - INTERVAL '30 days'
+	`
+	_, err = tx.Exec(ctx, queryInsert, m.CPUPercent, m.RAMUsed, m.RAMTotal, m.DiskUsed, m.DiskTotal)
+	if err != nil {
+		return fmt.Errorf("failed to insert metrics: %w", err)
+	}
+
+	_, err = tx.Exec(ctx, queryDelete)
+	if err != nil {
+		return fmt.Errorf("failed to cleanup old metrics: %w", err)
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to commit tx: %w", err)
+	}
+
+	return nil
 }
